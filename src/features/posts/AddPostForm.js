@@ -6,6 +6,9 @@ import { nanoid } from "@reduxjs/toolkit"
 import { addNewPost } from "./postsSlice"
 import { selectAllUsers } from "../users/usersSlice"
 
+import { Spinner } from "../../components/Spinner"
+import { useAddNewPostMutation } from "../api/apiSlice"
+
 
 export const AddPostForm = () => {
     const [title, setTitle] = useState('')
@@ -13,7 +16,9 @@ export const AddPostForm = () => {
     const [userId, setUserId] = useState('')
     const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
-    const dispatch = useDispatch()
+    const [ addNewPost,  { isLoading }] = useAddNewPostMutation()
+
+    //const dispatch = useDispatch()
     //const user = useSelector(state=>state.users.find(users=>users.id===userId))
     const users = useSelector(selectAllUsers)//useSelector(state => state.users)
 
@@ -39,11 +44,12 @@ export const AddPostForm = () => {
     const canSave = Boolean(title) && Boolean(content) && Boolean(user)
     */
 
-    const canSave = [title, content, userId].every(Boolean) && addRequestStatus === 'idle'
+    //const canSave = [title, content, userId].every(Boolean) && addRequestStatus === 'idle'
+    const canSave = [title, content, userId].every(Boolean) && !isLoading
     const onSavePostClicked = async () => {
         if (canSave) {
             try {
-                setAddRequestStatus('pending')
+                //setAddRequestStatus('pending')
                 //Redux Toolkit adds a .unwrap() function to the returned Promise, 
                 //which will return a new Promise that either has the actual action.payload value from a fulfilled action, 
                 //or throws an error if it's the rejected action. This lets us handle success and failure in the component using normal try/catch logic
