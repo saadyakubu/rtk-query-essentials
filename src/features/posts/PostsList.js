@@ -8,8 +8,10 @@ import { ReactionButtons } from "./ReactionButtons"
 import { selectAllPosts, fetchPosts, selectPostIds, selectPostById } from "./postsSlice"
 import { Spinner } from "../../components/Spinner"
 
-let PostExcerpt = ({ postId }) => { //let PostExcerpt = ({ post }) => {
-    const post = useSelector(state => selectPostById(state, postId))
+import { useGetPostsQuery } from "../api/apiSlice"
+
+let PostExcerpt = ({ post }) => {
+    
     return (
         <article className="post-excerpt">
             <h3>{post.title}</h3>
@@ -25,42 +27,32 @@ let PostExcerpt = ({ postId }) => { //let PostExcerpt = ({ post }) => {
     )
 }
 
-PostExcerpt = React.memo(PostExcerpt) //only re-renders when one of the props changes 
 
 export const PostsList = () => {
-    const dispatch = useDispatch()
-    //const posts = useSelector(selectAllPosts)//useSelector(state=>state.posts)
-    const orderedPostIds = useSelector(selectPostIds)
+    const {
+        data: posts = [],
+        isLoading,
+        isSuccess,
+        isError,
+        error
+    } = useGetPostsQuery()
 
-    const postStatus = useSelector(state => state.posts.status)
-    const error = useSelector(state => state.posts.error)
-
-    useEffect(() => {
-        if (postStatus === 'idle') {
-            dispatch(fetchPosts())
-        }
-    }, [postStatus, dispatch])
-
+    const sortedPosts = useMemo(() => {
+        const sortedPosts = posts.slice()
+        //sort posts in descending chronological order
+        sortedPosts.sort((a, b) => b.date.localeCompare(a.date))
+        return sortedPosts
+    }, [posts])
 
     let content
-    if (postStatus === 'loading') {
+    if (isLoading) {
         content = <Spinner text="Loading..." />
     }
-    else if(postStatus === 'succeeded') {
-
-        //sort post in reverse chronological order by datetime string
-        // const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
-
-        // content = orderedPosts.map(post => (
-        //     <PostExcerpt key={post.id} post={post} />
-        // ))
-        content = orderedPostIds.map(postId => (
-            <PostExcerpt key={postId} postId={postId} />
-        ))
-
+    else if(isSuccess) {
+        content = sortedPosts.map(post => <PostExcerpt key={post.id} post={post} />)
     }
-    else if(postStatus === 'failed'){
-        content = <div>{`Error: ${error}`}</div>
+    else if(isError){
+        content = <div>{`Error: ${error.toString()}`}</div>
     }
 
     return (
