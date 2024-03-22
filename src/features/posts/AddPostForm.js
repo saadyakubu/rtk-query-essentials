@@ -62,9 +62,9 @@ export const AddPostForm = () => {
             catch (error) {
                 console.error(`Failed to save the post: `, error)
             }
-            finally {
-                setAddRequestStatus('idle')
-            }
+            // finally {
+            //     setAddRequestStatus('idle')
+            // }
         }
     }
 
