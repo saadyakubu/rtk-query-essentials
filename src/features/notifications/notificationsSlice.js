@@ -77,6 +77,10 @@ export const fetchNotificationsWebsocket = () => (dispatch, getState) => {
 //     sortComparer: (a, b) => b.date.localeCompare(a.date)
 // })
 const notificationsAdapter = createEntityAdapter()
+const matchNotificationsReceived = isAnyOf(
+    notificationsReceived,
+    extendedApi.endpoints.getNotifications.matchFulfilled
+)
 
 export const fetchNotifications = createAsyncThunk('notifications/fetchNotifications', async (_, { getState})=>{
     const allNotifications = selectAllNotifications(getState())
