@@ -1,5 +1,5 @@
 import React from 'react'
-import { createAsyncThunk, createSlice, createEntityAdapter, createSelector, isAnyOf } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, createAction, createEntityAdapter, createSelector, isAnyOf } from '@reduxjs/toolkit'
 import { client } from '../../api/client'
 
 import { forceGenerateNotifications } from '../../api/server'
@@ -133,6 +133,6 @@ const notificationsSlice = createSlice({
 export default notificationsSlice.reducer
 //export const selectAllNotifications = state => state.notifications
 //export const { selectAll: selectAllNotifications } = notificationsAdapter.getSelectors(state => state.notifications)
-export const { selectAll: selectNotificationsMetadata, selectEntities: selectMetadatEntities } = 
+export const { selectAll: selectNotificationsMetadata, selectEntities: selectMetadataEntities } = 
                                                                             notificationsAdapter.getSelectors(state=> state.notifications)
 export const { allNotificationsRead } = notificationsSlice.actions

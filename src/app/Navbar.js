@@ -14,7 +14,7 @@ export const Navbar = () => {
   //const notifications = useSelector(selectAllNotifications)
   //const numUnreadNotifications = notifications.filter(n => !n.read).length
   const notificationsMetadata = useSelector(selectNotificationsMetadata)
-  const numUnreadNotifications = notifications.filter(n => !n.read).length
+  const numUnreadNotifications = notificationsMetadata.filter(n => !n.read).length
 
   //const fetchNewNotifications = () => dispatch(fetchNotifications())
   const fetchNewNotifications = () => dispatch(fetchNotificationsWebsocket())
