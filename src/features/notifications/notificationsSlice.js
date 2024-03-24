@@ -1,9 +1,11 @@
 import React from 'react'
-import { createAsyncThunk, createSlice, createEntityAdapter, createSelector } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, createEntityAdapter, createSelector, isAnyOf } from '@reduxjs/toolkit'
 import { client } from '../../api/client'
 
 import { forceGenerateNotifications } from '../../api/server'
 import { apiSlice } from '../api/apiSlice'
+
+const notificationsReceived = createAction('notifications/notificationsReceived')
 
 export const extendedApi = apiSlice.injectEndpoints({
     endpoints: builder => ({
@@ -11,7 +13,7 @@ export const extendedApi = apiSlice.injectEndpoints({
             query: () => '/notifications',
             async onCacheEntryAdded(
                 arg,
-                { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+                { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
             ){
                 //create a web socket connection when the cache subscription starts
                 const ws = new WebSocket('ws://localhost')
@@ -29,6 +31,8 @@ export const extendedApi = apiSlice.injectEndpoints({
                                     draft.push(...message.payload)
                                     draft.sort((a, b)=> b.date.localeCompare(a.date))
                                 })
+                                //dispatch an additional action so we can track "read" state
+                                dispatch(notificationsReceived(message.payload))
                                 break
                             }
                             default:
@@ -69,9 +73,10 @@ export const fetchNotificationsWebsocket = () => (dispatch, getState) => {
     forceGenerateNotifications(latestTimestamp)
 }
 
-const notificationsAdapter = createEntityAdapter({
-    sortComparer: (a, b) => b.date.localeCompare(a.date)
-})
+// const notificationsAdapter = createEntityAdapter({
+//     sortComparer: (a, b) => b.date.localeCompare(a.date)
+// })
+const notificationsAdapter = createEntityAdapter()
 
 export const fetchNotifications = createAsyncThunk('notifications/fetchNotifications', async (_, { getState})=>{
     const allNotifications = selectAllNotifications(getState())
@@ -93,7 +98,7 @@ const notificationsSlice = createSlice({
         },
     },
     extraReducers(builder){
-        builder.addCase(fetchNotifications.fulfilled, (state, action)=>{
+        /*builder.addCase(fetchNotifications.fulfilled, (state, action)=>{
             // state.push(...action.payload)
             // state.forEach(notification => {
             //     //any notifications we've read are no longer new
@@ -102,11 +107,28 @@ const notificationsSlice = createSlice({
             // state.sort((a, b)=> b.date.localeCompare(a.date))
             notificationsAdapter.upsertMany(state, action.payload)
             Object.values(state.entities).forEach(notification => notification.isNew = !notification.read)
+        })*/
+        builder.addMatcher(matchNotificationsReceived, (state, action) => {
+            //add client side metadata for tracking new notifications
+            const notificationsMetadata = action.payload.map(notification => ({
+                id: notification.id,
+                read: false, 
+                isNew: true
+            }))
+
+            Object.values(state.entities).forEach(notification =>{
+                //any notifications we've read are no longer new
+                notification.isNew = !notification.read
+            })
+
+            notificationsAdapter.upsertMany(state, notificationsMetadata)
         })
     }
   })
 
 export default notificationsSlice.reducer
 //export const selectAllNotifications = state => state.notifications
-export const { selectAll: selectAllNotifications } = notificationsAdapter.getSelectors(state => state.notifications)
+//export const { selectAll: selectAllNotifications } = notificationsAdapter.getSelectors(state => state.notifications)
+export const { selectAll: selectNotificationsMetadata, selectEntities: selectMetadatEntities } = 
+                                                                            notificationsAdapter.getSelectors(state=> state.notifications)
 export const { allNotificationsRead } = notificationsSlice.actions
