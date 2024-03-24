@@ -70,7 +70,28 @@ export const apiSlice = createApi({
             }),
             invalidatesTags: (result, error, arg) => [
                 {   type: 'Post', id: arg.postId    }
-            ]
+            ],
+            //called when the individual mutation is started, used for optimistic update in the client side 
+            //i.e save state in client side while proceeding with the server side
+            async onQueryStarted({ postId, reaction}, { dispatch, queryFulfilled}){
+                // `updateQueryData` requires the endpoint name and cache key arguments, so it knows which piece of cache state to update
+                const patchResult = dispatch(
+                    apiSlice.util.updateQueryData('getPosts', undefined, draft => {
+                        //The draft is Immer-wrapped and can be "mutated" like in createSlice
+                        const post = draft.find(post => post.id === postId)
+                        if(post){
+                            post.reaction[reaction]++
+                        }
+                    })
+                )
+
+                try {
+                    await queryFulfilled
+                } catch {
+                    patchResult.undo()
+                }
+            },
+
         })
     })
 })
