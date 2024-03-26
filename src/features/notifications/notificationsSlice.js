@@ -68,7 +68,7 @@ const selectNotificationsData = createSelector(
 export const fetchNotificationsWebsocket = () => (dispatch, getState) => {
     const allNotifications = selectNotificationsData(getState())
     const [ latestNotification ] = allNotifications
-    const latestTimestamp = latestNotification?.data.date ?? ''
+    const latestTimestamp = latestNotification?.date ?? ''
     //hardcode a call to the mock server to simulate a server push scenario over websockets
     forceGenerateNotifications(latestTimestamp)
 }
