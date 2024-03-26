@@ -2,7 +2,7 @@ import React from 'react'
 import { selectUserById } from './usersSlice'
 import { useSelector } from 'react-redux'
 import { selectAllPosts, selectPostsByUser } from '../posts/postsSlice'
-import { useGetPostQuery } from '../api/apiSlice'
+import { useGetPostsQuery } from '../api/apiSlice'
 import { Link } from 'react-router-dom'
 import { createSelector } from '@reduxjs/toolkit'
 
@@ -26,9 +26,10 @@ const User = ({ match }) => {
     
     //taking advantage memoizing technique by createSelector() in the postsSlice, to only re-render if the state changes. 
     //const postsForUser = useSelector(state => selectPostsByUser(state, userId))
-    const { postsForUser } = useGetPostQuery( undefined, {
+    const { postsForUser } = useGetPostsQuery( undefined, {
         selectFromResult: result => ({
             ...result,
+            // Include a field called `postsForUser` in the hook result object, which will be a filtered list of posts
             postsForUser: selectPostsByUser(result, userId)
         })
     })
