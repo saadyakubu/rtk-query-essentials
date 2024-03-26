@@ -17,7 +17,9 @@ export const Navbar = () => {
   const numUnreadNotifications = notificationsMetadata.filter(n => !n.read).length
 
   //const fetchNewNotifications = () => dispatch(fetchNotifications())
-  const fetchNewNotifications = () => dispatch(fetchNotificationsWebsocket())
+  const fetchNewNotifications = () => {
+    dispatch(fetchNotificationsWebsocket())
+  }
 
 
   let unreadNotificationsBadge
